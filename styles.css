@@ -1,0 +1,140 @@
+/* housing-watch ダッシュボード。
+   iPhone(縦)を第一の表示環境として設計している。 */
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --border: #e2e5ea;
+  --text: #1b1f24;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --up: #dc2626;
+  --down: #059669;
+  --warn-bg: #fff7ed;
+  --warn-border: #fdba74;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151a; --panel: #1b1f27; --border: #2c313b; --text: #e7eaee;
+    --muted: #9aa3b2; --accent: #60a5fa; --warn-bg: #2a2015; --warn-border: #a16207;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 15px; line-height: 1.6;
+}
+header {
+  position: sticky; top: 0; z-index: 10; background: var(--panel);
+  border-bottom: 1px solid var(--border); padding: 12px 16px 0;
+}
+h1 { font-size: 17px; margin: 0 0 2px; }
+.meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.tabs { display: flex; gap: 4px; overflow-x: auto; }
+.tab {
+  appearance: none; border: 1px solid var(--border); background: transparent;
+  color: var(--muted); border-bottom: none; border-radius: 8px 8px 0 0;
+  padding: 8px 14px; font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+.tab[aria-selected="true"] { background: var(--bg); color: var(--text); font-weight: 600; }
+main { padding: 16px; max-width: 1400px; margin: 0 auto; }
+section { margin-bottom: 24px; }
+h2 { font-size: 15px; margin: 0 0 10px; }
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px;
+}
+.kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 640px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+.kpi { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.kpi .label { font-size: 12px; color: var(--muted); }
+.kpi .value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.kpi .sub { font-size: 12px; color: var(--muted); }
+.delta-up { color: var(--up); } .delta-down { color: var(--down); }
+.warn {
+  background: var(--warn-bg); border: 1px solid var(--warn-border);
+  border-radius: var(--radius); padding: 12px; margin-bottom: 16px; font-size: 13px;
+}
+.warn ul { margin: 6px 0 0; padding-left: 18px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+/* 物件名は長いものが多いので幅を制限し、はみ出しは … で省略する。
+   こうしないと右側の築年数・価格・掲載日が画面外に押し出されて読めなくなる。 */
+td.title-cell { max-width: 22em; overflow: hidden; text-overflow: ellipsis; }
+td.title-cell a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 数値は右寄せにして桁を比べやすくする */
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* 横スクロールが必要なときに気づけるよう、端に影を出す */
+.scroll { background:
+  linear-gradient(to right, var(--panel) 30%, transparent),
+  linear-gradient(to left, var(--panel) 30%, transparent) 100% 0,
+  radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.28), transparent),
+  radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.28), transparent) 100% 0;
+  background-repeat: no-repeat; background-size: 32px 100%, 32px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll; }
+a { color: var(--accent); }
+.bar-row { display: grid; grid-template-columns: 205px 1fr 78px; gap: 10px; align-items: center; margin-bottom: 9px; font-size: 13px; }
+.bar-meta { color: var(--muted); font-size: 11px; line-height: 1.4; margin-top: 2px; }
+.chart-caption { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 0 0 12px; }
+.scope-button { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--text); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); border-radius: 6px; padding: 7px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+.scope-button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+@media (max-width: 600px) { .bar-row { grid-template-columns: 120px 1fr 70px; } }
+.bar-track { background: color-mix(in srgb, var(--accent) 12%, transparent); border-radius: 4px; height: 16px; }
+.bar-fill { background: var(--accent); height: 16px; border-radius: 4px; }
+.bar-value { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.empty { color: var(--muted); font-size: 13px; }
+.warn-text { color: var(--up); font-weight: 600; cursor: help; }
+svg.line { width: 100%; height: 180px; display: block; }
+footer { padding: 24px 16px 40px; color: var(--muted); font-size: 12px; text-align: center; }
+
+/* --- スマホ: 表を1物件1枚のカードにする ------------------------------------
+   12列の表を幅400pxで横スクロールさせると、月額総額や契約が画面3枚ぶん右に隠れる。
+   パソコンでは表、スマホではカード。どちらも app.js の table() が作る。 */
+.card-view { display: none; }
+.item { border-top: 1px solid var(--border); padding: 12px 0; }
+.item:first-child { border-top: none; padding-top: 2px; }
+.item-title { font-weight: 600; font-size: 14px; line-height: 1.45; margin-bottom: 6px; word-break: break-all; }
+.item-title a { color: var(--accent); }
+.item-money { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-bottom: 6px; }
+.item-money .item-label { display: block; font-size: 11px; color: var(--muted); }
+.item-money .item-value { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 12px; font-size: 13px; }
+.item-grid .item-pair { display: flex; gap: 6px; min-width: 0; }
+.item-grid .item-label { color: var(--muted); flex: none; font-size: 12px; }
+.item-grid .item-value { min-width: 0; overflow-wrap: anywhere; }
+.tab .short { display: none; }
+
+@media (max-width: 700px) {
+  .wide-view { display: none; }
+  .card-view { display: block; }
+  .tab { padding-left: 10px; padding-right: 10px; }
+  .tab .long { display: none; }
+  .tab .short { display: inline; }
+  .kpi .sub { font-size: 11px; }
+  /* iPhone の Safari は、文字が16px未満の入力欄をタップすると画面を拡大してしまう */
+  input, select { font-size: 16px !important; }
+}
+
+/* --- 大項目の開け閉め --------------------------------------------------- */
+.fold { margin-bottom: 10px; }
+.fold-summary {
+  list-style: none; cursor: pointer; user-select: none;
+  font-size: 15px; font-weight: 600; padding: 12px 14px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  display: flex; align-items: center; gap: 8px;
+}
+.fold-summary::-webkit-details-marker { display: none; }
+.fold-summary::before { content: "▶"; font-size: 11px; color: var(--muted); transition: transform .15s; }
+.fold[open] > .fold-summary::before { transform: rotate(90deg); }
+.fold[open] > .fold-summary { border-radius: var(--radius) var(--radius) 0 0; border-bottom-color: transparent; }
+.fold-body { padding: 12px 0 6px; }
+.fold-body > section:first-child, .fold-body > .card:first-child { margin-top: 0; }
+.fold-body h2 { margin-top: 14px !important; }
+.fold-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0 10px; font-size: 13px; color: var(--muted); }
+.fold-button {
+  background: transparent; color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; font-family: inherit;
+}
